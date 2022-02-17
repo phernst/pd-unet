@@ -1,0 +1,19 @@
+{
+    "run_prefix": "ZNormed",
+    "train_path": "Data/IXI_T1_HH_Slice60to90/equidist_sparse16_spokeifft_train.h5",
+    "val_path": "Data/IXI_T1_HH_Slice60to90/equidist_sparse16_spokeifft_val.h5",
+    "test_path": "Data/IXI_T1_HH_Slice60to90/equidist_sparse16_spokeifft_test.h5",
+    "valid_dir": "Output/IXI_T1_HH_Slice60to90/v1/validation",
+    "test_out_dir": "Output/IXI_T1_HH_Slice60to90/v1/test_out",
+    "per99_sino": 61.934728045338275,
+    "per99_img": 0.4014925013642323,
+    "gtMax_img": 2.40,
+    "gtMax_sino": 1.39,
+    "imsize": 256,
+    "fullspokes": 512,
+    "isGA": false,
+    "samplingtype": "sparse", 
+    "firstNSpoke": 128,
+    "everyNSpoke": 16,
+    "sinosize": 363
+}

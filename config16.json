@@ -1,0 +1,19 @@
+{
+    "run_prefix": "CHAOS",
+    "train_path": "Data/CHAOS/equidist_sparse16_spokeifft_train.h5",
+    "val_path": "Data/CHAOS/equidist_sparse16_spokeifft_val.h5",
+    "test_path": "Data/CHAOS/equidist_sparse16_spokeifft_test.h5",
+    "valid_dir": "Output/CHAOS/validation",
+    "test_out_dir": "Output/CHAOS/test_out",
+    "per99_sino": 67.61526006669408,
+    "per99_img": 0.5753929988839942,
+    "gtMax_img": 1.7246493352576728,
+    "gtMax_sino": 1.982721095954503,
+    "imsize": 256,
+    "fullspokes": 512,
+    "isGA": false,
+    "samplingtype": "sparse", 
+    "firstNSpoke": 128,
+    "everyNSpoke": 16,
+    "sinosize": 363
+}

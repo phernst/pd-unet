@@ -1,0 +1,9 @@
+torch==1.1.0
+torchvision==0.2.2
+torchsummary==1.5.1
+tensorboardX==1.6
+progressbar2==3.43.1
+opencv-python==4.0.0.21
+numpy==1.17.0
+pytorch_lightning==1.1.6
+git+https://github.com/phernst/pytorch_radon.git@torch17#egg=pytorch_radon
