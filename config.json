@@ -1,0 +1,9 @@
+{
+    "ds_dir": "ds_fan",
+    "train_path": "{subtype}{subnum}_train.h5",
+    "val_path": "{subtype}{subnum}_valid.h5",
+    "test_path": "{subtype}{subnum}_test.h5",
+    "valid_dir": "valid",
+    "log_dir": "lightning_logs",
+    "test_out_dir": "test_out"
+}

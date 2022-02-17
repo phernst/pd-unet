@@ -1,0 +1,5 @@
+{
+    "train_files": ["ABD_LYMPH_001.nii.gz", "ABD_LYMPH_016.nii.gz", "ABD_LYMPH_002.nii.gz", "ABD_LYMPH_008.nii.gz", "ABD_LYMPH_007.nii.gz", "ABD_LYMPH_017.nii.gz", "ABD_LYMPH_015.nii.gz", "ABD_LYMPH_014.nii.gz", "ABD_LYMPH_003.nii.gz", "ABD_LYMPH_013.nii.gz", "ABD_LYMPH_042.nii.gz", "ABD_LYMPH_005.nii.gz", "ABD_LYMPH_040.nii.gz", "ABD_LYMPH_012.nii.gz", "ABD_LYMPH_010.nii.gz", "ABD_LYMPH_011.nii.gz"],
+    "valid_files": ["ABD_LYMPH_009.nii.gz", "ABD_LYMPH_006.nii.gz", "ABD_LYMPH_004.nii.gz", "ABD_LYMPH_031.nii.gz"],
+    "test_files": ["ABD_LYMPH_050.nii.gz", "ABD_LYMPH_049.nii.gz", "ABD_LYMPH_061.nii.gz", "ABD_LYMPH_062.nii.gz", "ABD_LYMPH_063.nii.gz", "ABD_LYMPH_064.nii.gz", "ABD_LYMPH_065.nii.gz", "ABD_LYMPH_066.nii.gz"]
+}
