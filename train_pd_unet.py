@@ -252,8 +252,8 @@ def main():
         gpus=1,
         callbacks=[checkpoint_callback],
         max_epochs=hparams.max_epochs,
-        terminate_on_nan=True,
-        deterministic=True,
+        # terminate_on_nan=True,
+        # deterministic=True,
         accumulate_grad_batches=2,
     )
     trainer.fit(model)
