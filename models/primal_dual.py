@@ -150,8 +150,10 @@ class PrimalDualNetwork(nn.Module):
 
         stages = []
         for primary_block, dual_block in zip(self.primal_blocks, self.dual_blocks):
-            h = dual_block(h, znorm.normalize(self.radon.forward(f*self.norm.img).transpose(-1, -2)), g)
-            f = primary_block(self.radon.backprojection(filter_sinogram(znorm.unnormalize(h).transpose(-1, -2), 'hann'))/self.norm.img, f)
+            h = dual_block(h, znorm.normalize(
+                self.radon.forward(f*self.norm.img).transpose(-1, -2)), g)
+            f = primary_block(self.radon.backprojection(filter_sinogram(
+                znorm.unnormalize(h).transpose(-1, -2), 'hann'))/self.norm.img, f)
             stages.append(torch.mean(f, dim=1, keepdim=True))
 
         if output_stages:
@@ -205,8 +207,10 @@ class PrimalDualNetworkSino(nn.Module):
 
         stages = []
         for primary_block, dual_block in zip(self.primal_blocks, self.dual_blocks):
-            h = dual_block(h, znorm.normalize(self.radon.forward(f*self.norm.img).transpose(-1, -2)), g)
-            f = primary_block(self.radon.backprojection(filter_sinogram(znorm.unnormalize(h).transpose(-1, -2), 'hann'))/self.norm.img, f)
+            h = dual_block(h, znorm.normalize(
+                self.radon.forward(f*self.norm.img).transpose(-1, -2)), g)
+            f = primary_block(self.radon.backprojection(filter_sinogram(
+                znorm.unnormalize(h).transpose(-1, -2), 'hann'))/self.norm.img, f)
             stages.append(torch.mean(f, dim=1, keepdim=True))
 
         if output_stages:
@@ -245,11 +249,17 @@ def test_single_timing_orig_vs_unet(num_projections: int) -> Tuple[float, float]
             # det_count=geom.det_count,
             # det_spacing=geom.det_spacing,
         )
+        # net_orig = PrimalDualNetwork(
+        #     radon, 5, 5, 10,
         net_orig = PrimalDualNetwork(
-            radon, 5, 5, 10, use_original_block=True,
+            # radon, 301, 301, 10,
+            radon, 5, 5, 150,
+            use_original_block=True,
             use_original_init=True).cuda()
-        sparse_sino = torch.zeros(4, 1, 363, len(radon.angles), dtype=torch.float, device='cuda')
-        under_reco = torch.zeros(4, 1, 256, 256, dtype=torch.float, device='cuda')
+        sparse_sino = torch.zeros(4, 1, 363, len(
+            radon.angles), dtype=torch.float, device='cuda')
+        under_reco = torch.zeros(
+            4, 1, 256, 256, dtype=torch.float, device='cuda')
         # warmup
         for _ in range(5):
             net_orig(sparse_sino, under_reco)
@@ -280,14 +290,65 @@ def test_single_timing_orig_vs_unet(num_projections: int) -> Tuple[float, float]
 
 def test_timing_orig_vs_unet():
     from matplotlib import pyplot as plt
-    all_num_projections = list(range(2, 360, 10))
+    all_num_projections = list(range(2, 45, 10))
     all_times = list(map(test_single_timing_orig_vs_unet, all_num_projections))
     plt.plot(all_num_projections, [t[0] for t in all_times])
     plt.plot(all_num_projections, [t[1] for t in all_times])
     plt.grid()
-    plt.legend(["PD Network", "PD UNet"], loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.legend(["PD Network", "PD UNet"],
+               loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()
 
 
+def show_parameters(sparsity: int):
+    with torch.no_grad():
+        from torchinfo import summary
+        from models.primal_dual import PrimalDualNetwork as Net
+        from utilities.fan_geometry import default_fan_geometry
+        geom = default_fan_geometry()
+        radon = RadonFanbeam(
+            256, np.deg2rad(np.arange(360)),
+            source_distance=geom.source_distance,
+            det_distance=geom.det_distance,
+            det_count=geom.det_count,
+            det_spacing=geom.det_spacing,
+        )
+        theta = np.arange(360)[::sparsity]
+        radon = RadonFanbeam(
+            256, np.deg2rad(theta),
+            source_distance=geom.source_distance,
+            det_distance=geom.det_distance,
+            det_count=geom.det_count,
+            det_spacing=geom.det_spacing,
+        )
+
+        img_shape = (1, 1, 256, 256)
+
+        def num_parameters_pdunet():
+            net = Net(radon, 4, 5, 2,
+                      use_original_block=False,
+                      use_original_init=False,
+                      )
+            sino_shape = net.radon.forward(
+                torch.zeros(*img_shape, device='cuda')).transpose(-1, -2).shape
+            summ = summary(net, (sino_shape, img_shape), verbose=0)
+            return summ.total_params, summ.to_megabytes(summ.total_output_bytes)
+
+        def num_parameters_pdorig():
+            # net = Net(radon, 5, 5, 10,
+            # net = Net(radon, 5, 5, 150,
+            net = Net(radon, 301, 301, 10,
+                      use_original_block=True,
+                      use_original_init=True,
+                      )
+            sino_shape = net.radon.forward(
+                torch.zeros(*img_shape, device='cuda')).transpose(-1, -2).shape
+            summ = summary(net, (sino_shape, img_shape), verbose=0)
+            return summ.total_params, summ.to_megabytes(summ.total_output_bytes)
+
+        print(f'sparse {sparsity}, pdunet: {num_parameters_pdunet()}')
+        print(f'sparse {sparsity}, pdunet: {num_parameters_pdorig()}')
+
+
 if __name__ == '__main__':
-    test_timing_orig_vs_unet()
+    show_parameters(4)
