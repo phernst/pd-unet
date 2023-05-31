@@ -292,6 +292,7 @@ def test_timing_orig_vs_unet():
     from matplotlib import pyplot as plt
     all_num_projections = list(range(2, 45, 10))
     all_times = list(map(test_single_timing_orig_vs_unet, all_num_projections))
+    print(all_times)
     plt.plot(all_num_projections, [t[0] for t in all_times])
     plt.plot(all_num_projections, [t[1] for t in all_times])
     plt.grid()
@@ -303,8 +304,8 @@ def test_timing_orig_vs_unet():
 def show_parameters(sparsity: int):
     with torch.no_grad():
         from torchinfo import summary
-        from models.primal_dual import PrimalDualNetwork as Net
         from utilities.fan_geometry import default_fan_geometry
+        Net = PrimalDualNetwork
         geom = default_fan_geometry()
         radon = RadonFanbeam(
             256, np.deg2rad(np.arange(360)),
@@ -335,9 +336,9 @@ def show_parameters(sparsity: int):
             return summ.total_params, summ.to_megabytes(summ.total_output_bytes)
 
         def num_parameters_pdorig():
-            # net = Net(radon, 5, 5, 10,
-            # net = Net(radon, 5, 5, 150,
-            net = Net(radon, 301, 301, 10,
+            net = Net(radon, 5, 5, 10,
+                      # net = Net(radon, 5, 5, 150,
+                      # net = Net(radon, 301, 301, 10,
                       use_original_block=True,
                       use_original_init=True,
                       )
@@ -347,8 +348,64 @@ def show_parameters(sparsity: int):
             return summ.total_params, summ.to_megabytes(summ.total_output_bytes)
 
         print(f'sparse {sparsity}, pdunet: {num_parameters_pdunet()}')
-        print(f'sparse {sparsity}, pdunet: {num_parameters_pdorig()}')
+        print(f'sparse {sparsity}, pdorig: {num_parameters_pdorig()}')
+
+
+def show_complexity(sparsity: int):
+    with torch.no_grad():
+        from thop import profile
+        from thop import clever_format
+        from utilities.fan_geometry import default_fan_geometry
+        Net = PrimalDualNetwork
+        geom = default_fan_geometry()
+        radon = RadonFanbeam(
+            256, np.deg2rad(np.arange(360)),
+            source_distance=geom.source_distance,
+            det_distance=geom.det_distance,
+            det_count=geom.det_count,
+            det_spacing=geom.det_spacing,
+        )
+        theta = np.arange(360)[::sparsity]
+        radon = RadonFanbeam(
+            256, np.deg2rad(theta),
+            source_distance=geom.source_distance,
+            det_distance=geom.det_distance,
+            det_count=geom.det_count,
+            det_spacing=geom.det_spacing,
+        )
+
+        img_shape = (1, 1, 256, 256)
+
+        def num_parameters_pdunet():
+            net = Net(radon, 4, 5, 2,
+                      use_original_block=False,
+                      use_original_init=False,
+                      )
+            sino_shape = net.radon.forward(
+                torch.zeros(*img_shape, device='cuda')).transpose(-1, -2).shape
+            macs, params = profile(
+                net.cuda(), inputs=(torch.rand(sino_shape, device='cuda'),
+                                    torch.rand(img_shape, device='cuda')))
+            return clever_format([macs, params], "%.3f")
+
+        def num_parameters_pdorig():
+            # net = Net(radon, 5, 5, 10,
+            # net = Net(radon, 5, 5, 150,
+            net = Net(radon, 301, 301, 10,
+                      use_original_block=True,
+                      use_original_init=True,
+                      )
+            sino_shape = net.radon.forward(
+                torch.zeros(*img_shape, device='cuda')).transpose(-1, -2).shape
+            macs, params = profile(
+                net.cuda(), inputs=(torch.rand(sino_shape, device='cuda'),
+                                    torch.rand(img_shape, device='cuda')))
+            return clever_format([macs, params], "%.3f")
+
+        print(f'sparse {sparsity}, pdunet: {num_parameters_pdunet()}')
+        print(f'sparse {sparsity}, pdorig: {num_parameters_pdorig()}')
 
 
 if __name__ == '__main__':
-    show_parameters(4)
+    show_complexity(32)
+    # test_timing_orig_vs_unet()
